@@ -14,18 +14,26 @@ int main() {
     serial.printf("Multimeter starting\n");
     int mode = DC_MODE;
 
+    int lastPress = 0;
+
     // Initialise modes selector
     Modes modes;
     modes.initModes();
 
     // Initialise LCD
     PB_LCD_Init();
-    PB_LCD_Clear();
 
     while(true) {
-        // TODO: Debounce button
-        if (button == 1) {
+        // Clear LCD
+        PB_LCD_Clear();
+
+        if (button == 1 && lastPress == 0) {
             modes.switchMode(&mode);
+            lastPress = 1;
+        }
+
+        if(button == 0 && lastPress == 1) {
+            lastPress = 0;
         }
 
         // Print mode info to LCD
@@ -51,6 +59,8 @@ int main() {
                 break;
         }
         free(message);
+
+        wait_ms(200);
     }
 
     return 0;

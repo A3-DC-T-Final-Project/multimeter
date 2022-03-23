@@ -2,7 +2,7 @@
 
 void Modes::initModes() {
     modeA0 = new DigitalOut(PB_5);
-    modeA1 = new DigitalOut(PB_5);
+    modeA1 = new DigitalOut(PB_7);
 }
 
 void Modes::switchMode(int * mode) {
@@ -23,7 +23,7 @@ void Modes::switchMode(int * mode) {
 			modeA0->write(0);
 			break;
 		case I_MODE:
-			modeA1->write(1);
+			modeA0->write(1);
 			break;
     }
 }
