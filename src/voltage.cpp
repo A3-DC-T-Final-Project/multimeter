@@ -82,4 +82,28 @@ void Voltage::pinsTest() {
     PB_LCD_WriteString(message, 0xC);
     changeVoltageRange(V_10_Range);
     wait(10);
+
+    free(message);
+}
+
+void Voltage::displayVREF() {
+    AnalogIn vref(ADC_VREF);
+
+    float reference = vref.read();
+    // VREFINT has a typical value of 1.21V
+    // Page 139 https://www.st.com/resource/en/datasheet/dm00037051.pdf
+
+    float maxADC = 1.0;
+
+    float threeVolts = (maxADC * 1.21)/reference;
+
+    PB_LCD_Clear();
+    char * message = (char *) malloc(0x11 * sizeof(char));
+    snprintf(message, 0x11, "1.0: %.4fV", threeVolts);
+    PB_LCD_WriteString(message, 0x11);
+
+    PB_LCD_GoToXY(0, 1);
+    snprintf(message, 0x11, "%.4f: 1.21V", reference);
+    PB_LCD_WriteString(message, 0x11);
+    free(message);
 }

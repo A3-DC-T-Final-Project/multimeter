@@ -21,6 +21,7 @@ class Voltage {
         void initVoltage();
         char * measureVoltage(int mode);
         void pinsTest();
+        void displayVREF();
 };
 
 #endif /* _VOLTAGE_H_ */

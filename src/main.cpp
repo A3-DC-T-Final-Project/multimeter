@@ -65,7 +65,7 @@ int main() {
         }
         free(message);
 
-        voltage.pinsTest();
+        voltage.displayVREF();
 
         wait_ms(200);
     }
