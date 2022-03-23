@@ -12,9 +12,11 @@ class Voltage {
     private:
         DigitalOut * vRangeA0;
         DigitalOut * vRangeA1;
+        AnalogIn * vIn;
         int range;
         void changeVoltageRange(int range);
-        void measureDC();
+        void measureDC(char * voltage);
+        void measureAC(char * voltage);
     public:
         void initVoltage();
         char * measureVoltage(int mode);

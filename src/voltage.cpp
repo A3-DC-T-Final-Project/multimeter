@@ -1,5 +1,6 @@
 #include "mbed.h"
 
+#include "modes.hpp"
 #include "voltage.hpp"
 
 extern "C" {
@@ -9,6 +10,7 @@ extern "C" {
 void Voltage::initVoltage() {
     vRangeA0 = new DigitalOut(PE_3);
     vRangeA1 = new DigitalOut(PE_4);
+    vIn = new AnalogIn(PC_4);
 
     range = V_10_Range;
     changeVoltageRange(range);
@@ -36,8 +38,23 @@ void Voltage::changeVoltageRange(int range) {
     }
 }
 
+void Voltage::measureDC(char * voltage) {
+    int i;
+    float total = 0;
+    for(i = 0; i < 1000; i++) {
+        //total += vIn
+    }
+}
+
 char * Voltage::measureVoltage(int mode) {
     char * voltage = (char *) malloc(12 * sizeof(char));
+    snprintf(voltage, 0xC, "Placeholder");
+
+    if (mode == DC_MODE) {
+        measureDC(voltage);
+    } else if (mode == AC_MODE) {
+        measureAC(voltage);
+    }
 
     return voltage;
 }
