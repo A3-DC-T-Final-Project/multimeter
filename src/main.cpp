@@ -1,6 +1,7 @@
 #include "mbed.h"
 
 #include "modes.hpp"
+#include "voltage.hpp"
 
 extern "C" {
     #include <PB_LCD_Drivers.h>
@@ -19,6 +20,10 @@ int main() {
     // Initialise modes selector
     Modes modes;
     modes.initModes();
+
+    // Initialise voltage reading
+    Voltage voltage;
+    voltage.initVoltage();
 
     // Initialise LCD
     PB_LCD_Init();
@@ -59,6 +64,8 @@ int main() {
                 break;
         }
         free(message);
+
+        voltage.pinsTest();
 
         wait_ms(200);
     }
