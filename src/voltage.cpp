@@ -70,6 +70,10 @@ void Voltage::measureDC(char * voltage) {
 
     total /= 1000; // Average of our reading
     
+    float vref = getVREF();
+    lowerBound = Common::calculateBound(vref, expectedLower);
+    upperBound = Common::calculateBound(vref, expectedUpper);
+
     float calculatedVoltage = Common::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
 
     if (range == V_100M_Range)
@@ -85,47 +89,21 @@ char * Voltage::measureVoltage(int mode) {
     if (mode == DC_MODE) {
         measureDC(voltage);
     } else if (mode == AC_MODE) {
-        measureAC(voltage);
+        // measureAC(voltage);
     }
 
     return voltage;
 }
 
-void Voltage::pinsTest() {
-    char * message = (char *) malloc(12 * sizeof(char));
-    PB_LCD_Clear();
+float Voltage::getVREF() {
+    AnalogIn * vref = new AnalogIn(ADC_VREF);
 
-    snprintf(message, 0xC, "100m");
-    PB_LCD_WriteString(message, 0xC);
-    changeVoltageRange(V_100M_Range);
-    wait(10);
-    PB_LCD_Clear();
-    snprintf(message, 0xC, "1");
-    PB_LCD_WriteString(message, 0xC);
-    changeVoltageRange(V_1_Range);
-    wait(10);
-    PB_LCD_Clear();
-    snprintf(message, 0xC, "5");
-    PB_LCD_WriteString(message, 0xC);
-    changeVoltageRange(V_5_Range);
-    wait(10);
-    PB_LCD_Clear();
-    snprintf(message, 0xC, "10");
-    PB_LCD_WriteString(message, 0xC);
-    changeVoltageRange(V_10_Range);
-    wait(10);
+    float reference = vref->read();
 
-    free(message);
-}
+    free(vref);
+    return(reference);
 
-void Voltage::displayVREF() {
-    AnalogIn vref(ADC_VREF);
-
-    float reference = vref.read();
-    // VREFINT has a typical value of 1.21V
-    // Page 139 https://www.st.com/resource/en/datasheet/dm00037051.pdf
-
-    float maxADC = 1.0;
+    /* float maxADC = 1.0;
 
     float threeVolts = (maxADC * 1.21)/reference;
 
@@ -137,5 +115,5 @@ void Voltage::displayVREF() {
     PB_LCD_GoToXY(0, 1);
     snprintf(message, 0x11, "%.4f: 1.21V", reference);
     PB_LCD_WriteString(message, 0x11);
-    free(message);
+    free(message); */
 }

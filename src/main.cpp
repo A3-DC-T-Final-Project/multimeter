@@ -22,8 +22,8 @@ int main() {
     modes.initModes();
 
     // Initialise voltage reading
-    Voltage voltage;
-    voltage.initVoltage();
+    Voltage * voltage = new Voltage();
+    voltage->initVoltage();
 
     // Initialise LCD
     PB_LCD_Init();
@@ -44,11 +44,13 @@ int main() {
         // Print mode info to LCD
         PB_LCD_GoToXY(0, 0);
         char * message = (char *) malloc(12 * sizeof(char));
+        char * measurement;
         switch (mode) {
             default:
             case DC_MODE:
                 snprintf(message, 0xC, "DC Voltage:");
                 PB_LCD_WriteString(message, 0xC);
+                measurement = voltage->measureVoltage(DC_MODE);
                 break;
             case AC_MODE:
                 snprintf(message, 0xC, "AC Voltage:");
@@ -64,8 +66,6 @@ int main() {
                 break;
         }
         free(message);
-
-        voltage.displayVREF();
 
         wait_ms(200);
     }

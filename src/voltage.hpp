@@ -14,15 +14,14 @@ class Voltage {
         DigitalOut * vRangeA1;
         AnalogIn * vIn;
         int range;
-        float upperVoltage, lowerVoltage, upperBound, lowerBound;
+        float upperVoltage, lowerVoltage, upperBound, lowerBound, expectedLower, expectedUpper;
         void changeVoltageRange(int range);
         void measureDC(char * voltage);
         void measureAC(char * voltage);
     public:
         void initVoltage();
         char * measureVoltage(int mode);
-        void pinsTest();
-        void displayVREF();
+        float getVREF();
 };
 
 #endif /* _VOLTAGE_H_ */
