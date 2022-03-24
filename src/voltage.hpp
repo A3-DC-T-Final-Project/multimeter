@@ -14,6 +14,7 @@ class Voltage {
         DigitalOut * vRangeA1;
         AnalogIn * vIn;
         int range;
+        float upperVoltage, lowerVoltage, upperBound, lowerBound;
         void changeVoltageRange(int range);
         void measureDC(char * voltage);
         void measureAC(char * voltage);
