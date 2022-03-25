@@ -18,30 +18,53 @@ void Voltage::initVoltage() {
 }
 
 void Voltage::calculateExpectedVoltages() {
+    // 10V values as default
+    float Rf = 27e3;
+    float Rin = 100e3;
+    float upperRange = 5;
+    float lowerRange = -5;
+    float upperFirstStage = upperVoltage;
+    float lowerFirstStage = lowerVoltage;
     switch(range) {
         default:
         case V_10_Range:
-            float Rf = 27e3;
-            float Rin = 100e3;
-            float upperFirstStage = 10;
-            float lowerFirstStage = -10;
-            float upperRange = 5;
-            float lowerRange = -5;
-
-            upperFirstStage *= -(Rf/Rin);
-            lowerFirstStage *= -(Rf/Rin);
-            upperRange *= -(Rf/Rin);
-            lowerRange *= -(Rf/Rin);
-
-            float VDDA = getVDDA();
-
-            expectedUpper = (VDDA - upperFirstStage) / 2;
-            expectedLower = (VDDA - lowerFirstStage) / 2;
-            rangeUpperBound = (VDDA - upperRange) / 2;
-            rangeLowerBound = (VDDA - lowerRange) / 2;
-
+            Rf = 27e3;
+            Rin = 100e3;
+            upperRange = 5;
+            lowerRange = -5;
             break;
+        case V_5_Range:
+            Rf = 27e3;
+            Rin = 51e3;
+            upperRange = 1;
+            lowerRange = -1;
+            break;
+        case V_1_Range:
+            Rf = 270e3;
+            Rin = 100e3;
+            upperRange = 100e-3;
+            lowerRange = -100e-3;
+            break;
+        case V_100M_Range:
+            Rf = 750e3;
+            Rin = 30e3;
+            // Set upper and lower range to same value
+            upperRange = -1;
+            lowerRange = -1;
     }
+
+    upperFirstStage *= -(Rf/Rin);
+    lowerFirstStage *= -(Rf/Rin);
+    upperRange *= -(Rf/Rin);
+    lowerRange *= -(Rf/Rin);
+
+    float VDDA = getVDDA();
+
+    expectedUpper = (VDDA - upperFirstStage) / 2;
+    expectedLower = (VDDA - lowerFirstStage) / 2;
+    rangeUpperBound = (VDDA - upperRange) / 2;
+    rangeLowerBound = (VDDA - lowerRange) / 2;
+
 }
 
 void Voltage::changeVoltageRange(int range) {
