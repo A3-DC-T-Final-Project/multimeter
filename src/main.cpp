@@ -51,6 +51,8 @@ int main() {
                 snprintf(message, 0xC, "DC Voltage:");
                 PB_LCD_WriteString(message, 0xC);
                 measurement = voltage->measureVoltage(DC_MODE);
+                PB_LCD_GoToXY(0, 1);
+                PB_LCD_WriteString(measurement, 0x12);
                 break;
             case AC_MODE:
                 snprintf(message, 0xC, "AC Voltage:");

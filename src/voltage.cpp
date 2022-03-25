@@ -17,6 +17,33 @@ void Voltage::initVoltage() {
     changeVoltageRange(range);
 }
 
+void Voltage::calculateExpectedVoltages() {
+    switch(range) {
+        default:
+        case V_10_Range:
+            float Rf = 27e3;
+            float Rin = 100e3;
+            float upperFirstStage = 10;
+            float lowerFirstStage = -10;
+            float upperRange = 5;
+            float lowerRange = -5;
+
+            upperFirstStage *= -(Rf/Rin);
+            lowerFirstStage *= -(Rf/Rin);
+            upperRange *= -(Rf/Rin);
+            lowerRange *= -(Rf/Rin);
+
+            float VDDA = getVDDA();
+
+            expectedUpper = (VDDA - upperFirstStage) / 2;
+            expectedLower = (VDDA - lowerFirstStage) / 2;
+            rangeUpperBound = (VDDA - upperRange) / 2;
+            rangeLowerBound = (VDDA - lowerRange) / 2;
+
+            break;
+    }
+}
+
 void Voltage::changeVoltageRange(int range) {
     switch (range) {
         case V_100M_Range:
@@ -71,10 +98,18 @@ void Voltage::measureDC(char * voltage) {
     total /= 1000; // Average of our reading
     
     float vref = getVREF();
+
+    calculateExpectedVoltages();
+
     lowerBound = Common::calculateBound(vref, expectedLower);
     upperBound = Common::calculateBound(vref, expectedUpper);
 
     float calculatedVoltage = Common::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
+
+    if(calculatedVoltage > rangeLowerBound && calculatedVoltage < rangeUpperBound) {
+        range -= 1;
+        changeVoltageRange(range);
+    }
 
     if (range == V_100M_Range)
         snprintf(voltage, 0x11, "%.5lfmV", calculatedVoltage);
@@ -116,4 +151,16 @@ float Voltage::getVREF() {
     snprintf(message, 0x11, "%.4f: 1.21V", reference);
     PB_LCD_WriteString(message, 0x11);
     free(message); */
+}
+
+float Voltage::getVDDA() {
+    float vref = getVREF();
+
+    float threeVolts = 1.0;
+
+    // VREFINT has a typical value of 1.21V
+    // Page 139 https://www.st.com/resource/en/datasheet/dm00037051.pdf
+    threeVolts = 1.21 / vref;
+
+    return threeVolts;
 }
