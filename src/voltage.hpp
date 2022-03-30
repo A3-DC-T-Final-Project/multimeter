@@ -8,6 +8,8 @@
 #define V_5_Range 2
 #define V_10_Range 3
 
+#define VOLTAGE_DEBUG 0
+
 class Voltage {
     private:
         DigitalOut * vRangeA0;
@@ -15,12 +17,13 @@ class Voltage {
         AnalogIn * vIn;
         int range;
         float upperVoltage, lowerVoltage, upperBound, lowerBound, expectedLower, expectedUpper, rangeUpperBound, rangeLowerBound;
+        Serial * voltageSerial;
         void changeVoltageRange(int range);
         void measureDC(char * voltage);
         void measureAC(char * voltage);
         void calculateExpectedVoltages();
     public:
-        void initVoltage();
+        void initVoltage(Serial * serial);
         char * measureVoltage(int mode);
         float getVREF();
         float getVDDA();

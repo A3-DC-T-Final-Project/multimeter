@@ -8,10 +8,12 @@ extern "C" {
     #include <PB_LCD_Drivers.h>
 }
 
-void Voltage::initVoltage() {
+void Voltage::initVoltage(Serial * serial) {
     vRangeA0 = new DigitalOut(PE_3);
     vRangeA1 = new DigitalOut(PE_4);
     vIn = new AnalogIn(PC_4);
+
+    voltageSerial = serial;
 
     range = V_10_Range;
     changeVoltageRange(range);
@@ -49,8 +51,8 @@ void Voltage::calculateExpectedVoltages() {
             Rf = 750e3;
             Rin = 30e3;
             // Set upper and lower range to same value
-            upperRange = -1;
-            lowerRange = -1;
+            upperRange = 100e-3;
+            lowerRange = -100e-3;
     }
 
     upperFirstStage *= -(Rf/Rin);
@@ -64,14 +66,16 @@ void Voltage::calculateExpectedVoltages() {
     expectedLower = (VDDA - lowerFirstStage) / 2;
     rangeUpperBound = (VDDA - upperRange) / 2;
     rangeLowerBound = (VDDA - lowerRange) / 2;
-
 }
 
 void Voltage::changeVoltageRange(int range) {
+#if (VOLTAGE_DEBUG == 1)
+    voltageSerial->printf("Using range: %d\n", range);
+#endif
     switch (range) {
         case V_100M_Range:
-            upperVoltage = 100;
-            lowerVoltage = -100;
+            upperVoltage = 100e-3;
+            lowerVoltage = -100e-3;
             vRangeA0->write(0);
             vRangeA1->write(0);
             break;
@@ -121,6 +125,7 @@ void Voltage::measureDC(char * voltage) {
     total /= 1000; // Average of our reading
     
     float vref = getVREF();
+    float vdda = getVDDA();
 
     calculateExpectedVoltages();
 
@@ -128,16 +133,21 @@ void Voltage::measureDC(char * voltage) {
     upperBound = Common::calculateBound(vref, expectedUpper);
 
     float calculatedVoltage = Common::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
-
-    if(calculatedVoltage > rangeLowerBound && calculatedVoltage < rangeUpperBound) {
-        range -= 1;
-        changeVoltageRange(range);
-    }
+    float calculatedTotal = total * vdda;
 
     if (range == V_100M_Range)
-        snprintf(voltage, 0x11, "%.5lfmV", calculatedVoltage);
+        snprintf(voltage, 0x11, "%.5lfmV", calculatedVoltage * 1000);
     else
         snprintf(voltage, 0x11, "%.5lfV", calculatedVoltage);
+
+    if((calculatedTotal > rangeLowerBound && calculatedTotal < rangeUpperBound)
+        && range != V_100M_Range) {
+        range -= 1;
+        changeVoltageRange(range);
+    } else if (((calculatedTotal > expectedUpper) || (calculatedTotal < expectedLower)) && range != V_10_Range) {
+        range += 1;
+        changeVoltageRange(range);
+    }
 }
 
 char * Voltage::measureVoltage(int mode) {
@@ -160,20 +170,6 @@ float Voltage::getVREF() {
 
     free(vref);
     return(reference);
-
-    /* float maxADC = 1.0;
-
-    float threeVolts = (maxADC * 1.21)/reference;
-
-    PB_LCD_Clear();
-    char * message = (char *) malloc(0x11 * sizeof(char));
-    snprintf(message, 0x11, "1.0: %.4fV", threeVolts);
-    PB_LCD_WriteString(message, 0x11);
-
-    PB_LCD_GoToXY(0, 1);
-    snprintf(message, 0x11, "%.4f: 1.21V", reference);
-    PB_LCD_WriteString(message, 0x11);
-    free(message); */
 }
 
 float Voltage::getVDDA() {

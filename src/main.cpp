@@ -7,12 +7,12 @@ extern "C" {
     #include <PB_LCD_Drivers.h>
 }
 
-Serial serial(USBTX, USBRX);
-
 DigitalIn button(BUTTON1);
 
 int main() {
-    serial.printf("Multimeter starting\n");
+    Serial * serial = new Serial(USBTX, USBRX);
+
+    serial->printf("Multimeter starting\n");
     int mode = DC_MODE;
 
     int lastPress = 0;
@@ -23,7 +23,7 @@ int main() {
 
     // Initialise voltage reading
     Voltage * voltage = new Voltage();
-    voltage->initVoltage();
+    voltage->initVoltage(serial);
 
     // Initialise LCD
     PB_LCD_Init();
