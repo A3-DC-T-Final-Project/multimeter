@@ -150,6 +150,37 @@ void Voltage::measureDC(char * voltage) {
     }
 }
 
+void Voltage::measureAC(char * voltage) {
+    // Only use 10V range for now
+
+    changeVoltageRange(V_10_Range);
+
+    float vref = getVREF();
+
+    calculateExpectedVoltages();
+
+    lowerBound = Common::calculateBound(vref, expectedLower);
+    upperBound = Common::calculateBound(vref, expectedUpper);
+
+    int i;
+    double sumOfSquares = 0;
+    for (i = 0; i < 1000; i++) {
+        float ADCReading = vIn->read();
+        float instantaneousVoltage = Common::map(ADCReading, lowerBound, upperBound, lowerVoltage, upperVoltage);
+        sumOfSquares += pow(instantaneousVoltage, 2);
+
+        // As per DC reading.
+        wait_us(2);
+    }
+
+    sumOfSquares /= 1000;
+
+    double result = sqrt(sumOfSquares);
+    
+
+    snprintf(voltage, 0x11, "%.5lf Vrms", result);
+ }
+
 char * Voltage::measureVoltage(int mode) {
     char * voltage = (char *) malloc(12 * sizeof(char));
     snprintf(voltage, 0xC, "Placeholder");
@@ -157,7 +188,7 @@ char * Voltage::measureVoltage(int mode) {
     if (mode == DC_MODE) {
         measureDC(voltage);
     } else if (mode == AC_MODE) {
-        // measureAC(voltage);
+        measureAC(voltage);
     }
 
     return voltage;

@@ -27,7 +27,7 @@
  *----------------------------------------------------------------------------*/
 
 #include "PB_LCD_Drivers.h"
-#include "STM32F4xx.h"
+#include "stm32f407xx.h" // UNIX is case sensitive
 
 ////////////////////////////////////////
 // Some general purpose helper routines:

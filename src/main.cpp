@@ -2,6 +2,7 @@
 
 #include "modes.hpp"
 #include "voltage.hpp"
+#include "current.hpp"
 
 extern "C" {
     #include <PB_LCD_Drivers.h>
@@ -24,6 +25,10 @@ int main() {
     // Initialise voltage reading
     Voltage * voltage = new Voltage();
     voltage->initVoltage(serial);
+
+    // Initialise current reading
+    Current * current = new Current();
+    current->initCurrent(serial, voltage);
 
     // Initialise LCD
     PB_LCD_Init();
@@ -52,15 +57,21 @@ int main() {
                 PB_LCD_WriteString(message, 0xC);
                 measurement = voltage->measureVoltage(DC_MODE);
                 PB_LCD_GoToXY(0, 1);
-                PB_LCD_WriteString(measurement, 0x12);
+                PB_LCD_WriteString(measurement, 0x10);
                 break;
             case AC_MODE:
                 snprintf(message, 0xC, "AC Voltage:");
                 PB_LCD_WriteString(message, 0xC);
+                measurement = voltage->measureVoltage(AC_MODE);
+                PB_LCD_GoToXY(0, 1);
+                PB_LCD_WriteString(measurement, 0x10);
                 break;
             case I_MODE:
                 snprintf(message, 0xC, "Current:");
                 PB_LCD_WriteString(message, 0xC);
+                measurement = current->measureCurrent();
+                PB_LCD_GoToXY(0, 1);
+                PB_LCD_WriteString(measurement, 0x10);
                 break;
             case R_MODE:
                 snprintf(message, 0xC, "Resistance:");
@@ -69,7 +80,8 @@ int main() {
         }
         free(message);
 
-        wait_ms(200);
+        // 200ms
+        wait_us(2e5);
     }
 
     return 0;
