@@ -2,6 +2,7 @@
 #define _VOLTAGE_H_
 
 #include "mbed.h"
+#include "opamps_conf.hpp"
 
 #define V_100M_Range 0
 #define V_1_Range 1
@@ -16,12 +17,11 @@ class Voltage {
         DigitalOut * vRangeA1;
         AnalogIn * vIn;
         int range;
-        float upperVoltage, lowerVoltage, upperBound, lowerBound, expectedLower, expectedUpper, rangeUpperBound, rangeLowerBound;
+        float upperVoltage, lowerVoltage;
         Serial * voltageSerial;
         void changeVoltageRange(int range);
-        void measureDC(char * voltage);
-        void measureAC(char * voltage);
-        void calculateExpectedVoltages();
+        void measureDC(char * voltage, OpAmpsConf * opAmpsConf);
+        void measureAC(char * voltage, OpAmpsConf * opAmpsConf);
     public:
         void initVoltage(Serial * serial, AnalogIn * input);
         char * measureVoltage(int mode);

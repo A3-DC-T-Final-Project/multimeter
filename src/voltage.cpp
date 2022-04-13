@@ -3,6 +3,7 @@
 #include "modes.hpp"
 #include "voltage.hpp"
 #include "common.hpp"
+#include "opamps_conf.hpp"
 
 extern "C" {
     #include <PB_LCD_Drivers.h>
@@ -17,55 +18,6 @@ void Voltage::initVoltage(Serial * serial, AnalogIn * input) {
 
     range = V_10_Range;
     changeVoltageRange(range);
-}
-
-void Voltage::calculateExpectedVoltages() {
-    // 10V values as default
-    float Rf = 27e3;
-    float Rin = 100e3;
-    float upperRange = 5;
-    float lowerRange = -5;
-    float upperFirstStage = upperVoltage;
-    float lowerFirstStage = lowerVoltage;
-    switch(range) {
-        default:
-        case V_10_Range:
-            Rf = 27e3;
-            Rin = 100e3;
-            upperRange = 5;
-            lowerRange = -5;
-            break;
-        case V_5_Range:
-            Rf = 27e3;
-            Rin = 51e3;
-            upperRange = 1;
-            lowerRange = -1;
-            break;
-        case V_1_Range:
-            Rf = 270e3;
-            Rin = 100e3;
-            upperRange = 100e-3;
-            lowerRange = -100e-3;
-            break;
-        case V_100M_Range:
-            Rf = 750e3;
-            Rin = 30e3;
-            // Set upper and lower range to same value
-            upperRange = 100e-3;
-            lowerRange = -100e-3;
-    }
-
-    upperFirstStage *= -(Rf/Rin);
-    lowerFirstStage *= -(Rf/Rin);
-    upperRange *= -(Rf/Rin);
-    lowerRange *= -(Rf/Rin);
-
-    float VDDA = getVDDA();
-
-    expectedUpper = (VDDA - upperFirstStage) / 2;
-    expectedLower = (VDDA - lowerFirstStage) / 2;
-    rangeUpperBound = (VDDA - upperRange) / 2;
-    rangeLowerBound = (VDDA - lowerRange) / 2;
 }
 
 void Voltage::changeVoltageRange(int range) {
@@ -101,7 +53,7 @@ void Voltage::changeVoltageRange(int range) {
     }
 }
 
-void Voltage::measureDC(char * voltage) {
+void Voltage::measureDC(char * voltage, OpAmpsConf * opAmpsConf) {
     int i;
     float total = 0;
     for(i = 0; i < 1000; i++) {
@@ -127,10 +79,15 @@ void Voltage::measureDC(char * voltage) {
     float vref = getVREF();
     float vdda = getVDDA();
 
-    calculateExpectedVoltages();
+    opAmpsConf->initOpampConf(range, DC_MODE, getVDDA());
 
-    lowerBound = CommonUtils::calculateBound(vref, expectedLower);
-    upperBound = CommonUtils::calculateBound(vref, expectedUpper);
+    float expectedLower = opAmpsConf->getExpectedLower();
+    float expectedUpper = opAmpsConf->getExpectedUpper();
+    float rangeLowerBound = opAmpsConf->getRangeLowerBound();
+    float rangeUpperBound = opAmpsConf->getRangeUpperBound();
+
+    float lowerBound = CommonUtils::calculateBound(vref, expectedLower);
+    float upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
     float calculatedVoltage = CommonUtils::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
     float calculatedTotal = total * vdda;
@@ -150,17 +107,20 @@ void Voltage::measureDC(char * voltage) {
     }
 }
 
-void Voltage::measureAC(char * voltage) {
+void Voltage::measureAC(char * voltage, OpAmpsConf * opAmpsConf) {
     // Only use 10V range for now
 
     changeVoltageRange(V_10_Range);
 
     float vref = getVREF();
 
-    calculateExpectedVoltages();
+    opAmpsConf->initOpampConf(range, DC_MODE, getVDDA());
 
-    lowerBound = CommonUtils::calculateBound(vref, expectedLower);
-    upperBound = CommonUtils::calculateBound(vref, expectedUpper);
+    float expectedLower = opAmpsConf->getExpectedLower();
+    float expectedUpper = opAmpsConf->getExpectedUpper();
+
+    float lowerBound = CommonUtils::calculateBound(vref, expectedLower);
+    float upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
     int i;
     double sumOfSquares = 0;
@@ -185,12 +145,15 @@ char * Voltage::measureVoltage(int mode) {
     char * voltage = (char *) malloc(12 * sizeof(char));
     snprintf(voltage, 0xC, "Placeholder");
 
+    OpAmpsConf * opAmpsConf = new OpAmpsConf();
+
     if (mode == DC_MODE) {
-        measureDC(voltage);
+        measureDC(voltage, opAmpsConf);
     } else if (mode == AC_MODE) {
-        measureAC(voltage);
+        measureAC(voltage, opAmpsConf);
     }
 
+    free(opAmpsConf);
     return voltage;
 }
 

@@ -1,8 +1,10 @@
 #include "mbed.h"
 
+#include "modes.hpp"
 #include "current.hpp"
 #include "voltage.hpp"
 #include "common.hpp"
+#include "opamps_conf.hpp"
 
 void Current::initCurrent(Serial * serial, Voltage * voltage, AnalogIn * input) {
     iRangeA0 = new DigitalOut(PE_5);
@@ -45,56 +47,9 @@ void Current::changeCurrentRange(int range) {
     }
 }
 
-void Current::calculateExpectedCurrents() {
-    // 100m values as default
-    float Rf = 27e3;
-    float Rin = 1e3;
-    float upperRange = 50e-3;
-    float lowerRange = -50e-3;
-    float upperFirstStage = upperVoltage;
-    float lowerFirstStage = lowerVoltage;
-    switch(range) {
-        default:
-        case I_100:
-            Rf = 27e3;
-            Rin = 1e3;
-            upperRange = 50e-3;
-            lowerRange = -50e-3;
-            break;
-        case I_50:
-            Rf = 27e3;
-            Rin = 510;
-            upperRange = 50e-3;
-            lowerRange = -50e-3;
-            break;
-        case I_25:
-            Rf = 120e3;
-            Rin = 1.1e3;
-            upperRange = 25e-3;
-            lowerRange = -25-3;
-            break;
-        case I_10:
-            Rf = 270e3;
-            Rin = 1e3;
-            // Set upper and lower range to same value
-            upperRange = 10e-3;
-            lowerRange = -10e-3;
-    }
-
-    upperFirstStage *= -(Rf/Rin);
-    lowerFirstStage *= -(Rf/Rin);
-    upperRange *= -(Rf/Rin);
-    lowerRange *= -(Rf/Rin);
-
-    float VDDA = voltage_ptr->getVDDA();
-
-    expectedUpper = (VDDA - upperFirstStage) / 2;
-    expectedLower = (VDDA - lowerFirstStage) / 2;
-    rangeUpperBound = (VDDA - upperRange) / 2;
-    rangeLowerBound = (VDDA - lowerRange) / 2;
-}
-
 char * Current::measureCurrent() {
+    OpAmpsConf * opAmpsConf = new OpAmpsConf();
+
     int i;
     float total = 0;
     for(i = 0; i < 1000; i++) {
@@ -109,10 +64,15 @@ char * Current::measureCurrent() {
     float vref = voltage_ptr->getVREF();
     float vdda = voltage_ptr->getVDDA();
 
-    calculateExpectedCurrents();
+    opAmpsConf->initOpampConf(range, I_MODE, voltage_ptr->getVDDA());
 
-    lowerBound = CommonUtils::calculateBound(vref, expectedLower);
-    upperBound = CommonUtils::calculateBound(vref, expectedUpper);
+    float expectedLower = opAmpsConf->getExpectedLower();
+    float expectedUpper = opAmpsConf->getExpectedUpper();
+    float rangeLowerBound = opAmpsConf->getRangeLowerBound();
+    float rangeUpperBound = opAmpsConf->getRangeUpperBound();
+
+    float lowerBound = CommonUtils::calculateBound(vref, expectedLower);
+    float upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
     float calculatedCurrent = CommonUtils::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
     float calculatedTotal = total * vdda;

@@ -19,9 +19,8 @@ class Current {
         Serial * currentSerial;
         Voltage * voltage_ptr;
         int range;
-        float upperVoltage, lowerVoltage, upperBound, lowerBound, expectedLower, expectedUpper, rangeUpperBound, rangeLowerBound;
+        float upperVoltage, lowerVoltage;
         void changeCurrentRange(int range);
-        void calculateExpectedCurrents();
     public:
         void initCurrent(Serial * serial, Voltage * voltage, AnalogIn * input);
         char * measureCurrent();
