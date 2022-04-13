@@ -23,7 +23,7 @@ class Voltage {
         void measureAC(char * voltage);
         void calculateExpectedVoltages();
     public:
-        void initVoltage(Serial * serial);
+        void initVoltage(Serial * serial, AnalogIn * input);
         char * measureVoltage(int mode);
         float getVREF();
         float getVDDA();

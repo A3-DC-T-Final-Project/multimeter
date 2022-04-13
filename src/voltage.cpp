@@ -8,10 +8,10 @@ extern "C" {
     #include <PB_LCD_Drivers.h>
 }
 
-void Voltage::initVoltage(Serial * serial) {
+void Voltage::initVoltage(Serial * serial, AnalogIn * input) {
     vRangeA0 = new DigitalOut(PE_3);
     vRangeA1 = new DigitalOut(PE_4);
-    vIn = new AnalogIn(PC_4);
+    vIn = input;
 
     voltageSerial = serial;
 
@@ -129,10 +129,10 @@ void Voltage::measureDC(char * voltage) {
 
     calculateExpectedVoltages();
 
-    lowerBound = Common::calculateBound(vref, expectedLower);
-    upperBound = Common::calculateBound(vref, expectedUpper);
+    lowerBound = CommonUtils::calculateBound(vref, expectedLower);
+    upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
-    float calculatedVoltage = Common::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
+    float calculatedVoltage = CommonUtils::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
     float calculatedTotal = total * vdda;
 
     if (range == V_100M_Range)
@@ -159,14 +159,14 @@ void Voltage::measureAC(char * voltage) {
 
     calculateExpectedVoltages();
 
-    lowerBound = Common::calculateBound(vref, expectedLower);
-    upperBound = Common::calculateBound(vref, expectedUpper);
+    lowerBound = CommonUtils::calculateBound(vref, expectedLower);
+    upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
     int i;
     double sumOfSquares = 0;
     for (i = 0; i < 1000; i++) {
         float ADCReading = vIn->read();
-        float instantaneousVoltage = Common::map(ADCReading, lowerBound, upperBound, lowerVoltage, upperVoltage);
+        float instantaneousVoltage = CommonUtils::map(ADCReading, lowerBound, upperBound, lowerVoltage, upperVoltage);
         sumOfSquares += pow(instantaneousVoltage, 2);
 
         // As per DC reading.

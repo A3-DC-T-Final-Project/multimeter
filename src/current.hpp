@@ -23,7 +23,7 @@ class Current {
         void changeCurrentRange(int range);
         void calculateExpectedCurrents();
     public:
-        void initCurrent(Serial * serial, Voltage * voltage);
+        void initCurrent(Serial * serial, Voltage * voltage, AnalogIn * input);
         char * measureCurrent();
 };
 

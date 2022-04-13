@@ -4,10 +4,10 @@
 #include "voltage.hpp"
 #include "common.hpp"
 
-void Current::initCurrent(Serial * serial, Voltage * voltage) {
+void Current::initCurrent(Serial * serial, Voltage * voltage, AnalogIn * input) {
     iRangeA0 = new DigitalOut(PE_5);
     iRangeA1 = new DigitalOut(PE_6);
-    iIn = new AnalogIn(PC_4);
+    iIn = input;
 
     currentSerial = serial;
     voltage_ptr = voltage;
@@ -111,10 +111,10 @@ char * Current::measureCurrent() {
 
     calculateExpectedCurrents();
 
-    lowerBound = Common::calculateBound(vref, expectedLower);
-    upperBound = Common::calculateBound(vref, expectedUpper);
+    lowerBound = CommonUtils::calculateBound(vref, expectedLower);
+    upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
-    float calculatedCurrent = Common::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
+    float calculatedCurrent = CommonUtils::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
     float calculatedTotal = total * vdda;
 
     char * current = (char *) malloc(0x10 * sizeof(char));

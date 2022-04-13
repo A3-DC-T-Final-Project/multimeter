@@ -3,6 +3,7 @@
 #include "modes.hpp"
 #include "voltage.hpp"
 #include "current.hpp"
+#include "common.hpp"
 
 extern "C" {
     #include <PB_LCD_Drivers.h>
@@ -18,17 +19,21 @@ int main() {
 
     int lastPress = 0;
 
+    // Initialise common class (initialises analoginput)
+    Common * common = new Common();
+    AnalogIn * input = common->initInput();
+
     // Initialise modes selector
     Modes modes;
     modes.initModes();
 
     // Initialise voltage reading
     Voltage * voltage = new Voltage();
-    voltage->initVoltage(serial);
+    voltage->initVoltage(serial, input);
 
     // Initialise current reading
     Current * current = new Current();
-    current->initCurrent(serial, voltage);
+    current->initCurrent(serial, voltage, input);
 
     // Initialise LCD
     PB_LCD_Init();

@@ -1,6 +1,7 @@
+#include "mbed.h"
 #include "common.hpp"
 
-namespace Common {
+namespace CommonUtils {
     // From https://www.arduino.cc/reference/en/language/functions/math/map/
     float map(float x, float in_min, float in_max, float out_min, float out_max) {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -15,4 +16,10 @@ namespace Common {
 
         return bound;
     }
+}
+
+AnalogIn * Common::initInput() {
+    input = new AnalogIn(PC_4);
+
+    return input;
 }
