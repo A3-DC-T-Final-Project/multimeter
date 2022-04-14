@@ -130,7 +130,7 @@ void Voltage::measureAC(char * voltage, OpAmpsConf * opAmpsConf) {
         sumOfSquares += pow(instantaneousVoltage, 2);
 
         // As per DC reading.
-        wait_us(2);
+        //wait_us(2);
     }
 
     sumOfSquares /= 1000;
@@ -142,7 +142,7 @@ void Voltage::measureAC(char * voltage, OpAmpsConf * opAmpsConf) {
  }
 
 char * Voltage::measureVoltage(int mode) {
-    char * voltage = (char *) malloc(12 * sizeof(char));
+    char * voltage = (char *) malloc(0x11 * sizeof(char));
     snprintf(voltage, 0xC, "Placeholder");
 
     OpAmpsConf * opAmpsConf = new OpAmpsConf();

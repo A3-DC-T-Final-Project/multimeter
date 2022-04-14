@@ -59,7 +59,7 @@ void OpAmpsConf::initOpampConf(int range, int mode, float VDDA) {
                 case I_50:
                     Rf = 27e3;
                     Rin = 510;
-                    upperRange = 25-3;
+                    upperRange = 25e-3;
                     lowerRange = -25e-3;
                     upperFirstStage = 50e-3;
                     lowerFirstStage = -50e-3;
@@ -79,6 +79,7 @@ void OpAmpsConf::initOpampConf(int range, int mode, float VDDA) {
                     lowerRange = -10e-3;
                     upperFirstStage = upperRange;
                     lowerFirstStage = lowerRange;
+                    break;
             }
             break;
     }

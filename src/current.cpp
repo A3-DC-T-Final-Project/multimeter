@@ -15,6 +15,7 @@ void Current::initCurrent(Serial * serial, Voltage * voltage, AnalogIn * input) 
     voltage_ptr = voltage;
 
     range = I_100;
+    changeCurrentRange(range);
 }
 
 void Current::changeCurrentRange(int range) {
@@ -42,7 +43,7 @@ void Current::changeCurrentRange(int range) {
             upperVoltage = 10e-3;
             lowerVoltage = -10e-3;
             iRangeA0->write(0);
-            iRangeA1->write(1);
+            iRangeA1->write(0);
         break;
     }
 }
@@ -81,7 +82,6 @@ char * Current::measureCurrent() {
 
     // Multiply by 1000 to have sig fifures before floating point.
     snprintf(current, 0x11, "%.5lfmA", calculatedCurrent * 1000);
-
 
     if((calculatedTotal > rangeLowerBound && calculatedTotal < rangeUpperBound)
         && range != I_10) {
