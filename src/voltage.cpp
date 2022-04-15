@@ -1,15 +1,15 @@
-#include "mbed.h"
-
-#include "modes.hpp"
 #include "voltage.hpp"
+
 #include "common.hpp"
+#include "mbed.h"
+#include "modes.hpp"
 #include "opamps_conf.hpp"
 
 extern "C" {
-    #include <PB_LCD_Drivers.h>
+#include <PB_LCD_Drivers.h>
 }
 
-void Voltage::initVoltage(Serial * serial, AnalogIn * input) {
+void Voltage::initVoltage(Serial *serial, AnalogIn *input) {
     vRangeA0 = new DigitalOut(PE_3);
     vRangeA1 = new DigitalOut(PE_4);
     vIn = input;
@@ -53,10 +53,11 @@ void Voltage::changeVoltageRange(int range) {
     }
 }
 
-void Voltage::measureDC(char * voltage, OpAmpsConf * opAmpsConf) {
+void Voltage::measureDC(char *voltage, OpAmpsConf *opAmpsConf,
+                        float *voltageForResistance) {
     int i;
     float total = 0;
-    for(i = 0; i < 1000; i++) {
+    for (i = 0; i < 1000; i++) {
         total += vIn->read();
 
         /* https://www.st.com/resource/en/datasheet/dm00037051.pdf
@@ -67,15 +68,15 @@ void Voltage::measureDC(char * voltage, OpAmpsConf * opAmpsConf) {
          * average tCONV = (16.4u + 0.5u)/2 = 8.45us
          * 100Hz = Full wave takes 10ms
          * 1000 samples = 8.45us * 1000 = 8.45ms
-         * time to add = 10ms - 8.45ms = 1.55ms, round up to 2ms just because *real world*
-         * delay = 2ms/1000 = 2us
+         * time to add = 10ms - 8.45ms = 1.55ms, round up to 2ms just because
+         * *real world* delay = 2ms/1000 = 2us
          */
 
         wait_us(2);
     }
 
-    total /= 1000; // Average of our reading
-    
+    total /= 1000;  // Average of our reading
+
     float vref = getVREF();
     float vdda = getVDDA();
 
@@ -89,25 +90,33 @@ void Voltage::measureDC(char * voltage, OpAmpsConf * opAmpsConf) {
     float lowerBound = CommonUtils::calculateBound(vref, expectedLower);
     float upperBound = CommonUtils::calculateBound(vref, expectedUpper);
 
-    float calculatedVoltage = CommonUtils::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
+    float calculatedVoltage = CommonUtils::map(total, lowerBound, upperBound,
+                                               lowerVoltage, upperVoltage);
     float calculatedTotal = total * vdda;
 
-    if (range == V_100M_Range)
-        snprintf(voltage, 0x11, "%.5lfmV", calculatedVoltage * 1000);
-    else
-        snprintf(voltage, 0x11, "%.5lfV", calculatedVoltage);
+    if (voltageForResistance == NULL) {
+        if (range == V_100M_Range)
+            snprintf(voltage, 0x11, "%.5lfmV", calculatedVoltage * 1000);
+        else
+            snprintf(voltage, 0x11, "%.5lfV", calculatedVoltage);
+    } else {
+        (*voltageForResistance) = calculatedVoltage;
+    }
 
-    if((calculatedTotal > rangeLowerBound && calculatedTotal < rangeUpperBound)
-        && range != V_100M_Range) {
+    if ((calculatedTotal > rangeLowerBound &&
+         calculatedTotal < rangeUpperBound) &&
+        range != V_100M_Range) {
         range -= 1;
         changeVoltageRange(range);
-    } else if (((calculatedTotal > expectedUpper) || (calculatedTotal < expectedLower)) && range != V_10_Range) {
+    } else if (((calculatedTotal > expectedUpper) ||
+                (calculatedTotal < expectedLower)) &&
+               range != V_10_Range) {
         range += 1;
         changeVoltageRange(range);
     }
 }
 
-void Voltage::measureAC(char * voltage, OpAmpsConf * opAmpsConf) {
+void Voltage::measureAC(char *voltage, OpAmpsConf *opAmpsConf) {
     // Only use 10V range for now
 
     changeVoltageRange(V_10_Range);
@@ -126,29 +135,29 @@ void Voltage::measureAC(char * voltage, OpAmpsConf * opAmpsConf) {
     double sumOfSquares = 0;
     for (i = 0; i < 1000; i++) {
         float ADCReading = vIn->read();
-        float instantaneousVoltage = CommonUtils::map(ADCReading, lowerBound, upperBound, lowerVoltage, upperVoltage);
+        float instantaneousVoltage = CommonUtils::map(
+            ADCReading, lowerBound, upperBound, lowerVoltage, upperVoltage);
         sumOfSquares += pow(instantaneousVoltage, 2);
 
         // As per DC reading.
-        //wait_us(2);
+        // wait_us(2);
     }
 
     sumOfSquares /= 1000;
 
     double result = sqrt(sumOfSquares);
-    
 
     snprintf(voltage, 0x11, "%.5lf Vrms", result);
- }
+}
 
-char * Voltage::measureVoltage(int mode) {
-    char * voltage = (char *) malloc(0x11 * sizeof(char));
+char *Voltage::measureVoltage(int mode, float *voltageForResistance) {
+    char *voltage = (char *)malloc(0x11 * sizeof(char));
     snprintf(voltage, 0xC, "Placeholder");
 
-    OpAmpsConf * opAmpsConf = new OpAmpsConf();
+    OpAmpsConf *opAmpsConf = new OpAmpsConf();
 
     if (mode == DC_MODE) {
-        measureDC(voltage, opAmpsConf);
+        measureDC(voltage, opAmpsConf, voltageForResistance);
     } else if (mode == AC_MODE) {
         measureAC(voltage, opAmpsConf);
     }
@@ -158,12 +167,12 @@ char * Voltage::measureVoltage(int mode) {
 }
 
 float Voltage::getVREF() {
-    AnalogIn * vref = new AnalogIn(ADC_VREF);
+    AnalogIn *vref = new AnalogIn(ADC_VREF);
 
     float reference = vref->read();
 
     free(vref);
-    return(reference);
+    return (reference);
 }
 
 float Voltage::getVDDA() {

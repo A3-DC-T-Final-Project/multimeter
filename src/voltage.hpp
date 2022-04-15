@@ -20,11 +20,11 @@ class Voltage {
         float upperVoltage, lowerVoltage;
         Serial * voltageSerial;
         void changeVoltageRange(int range);
-        void measureDC(char * voltage, OpAmpsConf * opAmpsConf);
+        void measureDC(char * voltage, OpAmpsConf * opAmpsConf, float * voltageForResistance);
         void measureAC(char * voltage, OpAmpsConf * opAmpsConf);
     public:
         void initVoltage(Serial * serial, AnalogIn * input);
-        char * measureVoltage(int mode);
+        char * measureVoltage(int mode, float * voltageForResistance);
         float getVREF();
         float getVDDA();
 };

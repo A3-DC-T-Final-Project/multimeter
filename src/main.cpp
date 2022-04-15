@@ -3,6 +3,7 @@
 #include "modes.hpp"
 #include "voltage.hpp"
 #include "current.hpp"
+#include "resistance.hpp"
 #include "common.hpp"
 
 extern "C" {
@@ -35,6 +36,10 @@ int main() {
     Current * current = new Current();
     current->initCurrent(serial, voltage, input);
 
+    // Initialises resistance reading
+    Resistance * resistance = new Resistance();
+    resistance->initResistance(serial, voltage);
+
     // Initialise LCD
     PB_LCD_Init();
 
@@ -60,14 +65,14 @@ int main() {
             case DC_MODE:
                 snprintf(message, 0xC, "DC Voltage:");
                 PB_LCD_WriteString(message, 0xC);
-                measurement = voltage->measureVoltage(DC_MODE);
+                measurement = voltage->measureVoltage(DC_MODE, NULL);
                 PB_LCD_GoToXY(0, 1);
                 PB_LCD_WriteString(measurement, 0x10);
                 break;
             case AC_MODE:
                 snprintf(message, 0xC, "AC Voltage:");
                 PB_LCD_WriteString(message, 0xC);
-                measurement = voltage->measureVoltage(AC_MODE);
+                measurement = voltage->measureVoltage(AC_MODE, NULL);
                 PB_LCD_GoToXY(0, 1);
                 PB_LCD_WriteString(measurement, 0x10);
                 break;
@@ -81,6 +86,9 @@ int main() {
             case R_MODE:
                 snprintf(message, 0xC, "Resistance:");
                 PB_LCD_WriteString(message, 0xC);
+                measurement = resistance->measureResistance();
+                PB_LCD_GoToXY(0, 1);
+                PB_LCD_WriteString(measurement, 0x10);
                 break;
         }
         free(message);
