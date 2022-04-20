@@ -5,8 +5,8 @@
 #include "voltage.hpp"
 
 void Resistance::initResistance(Serial *serial, Voltage *voltage) {
-    rRangeA0 = new DigitalOut(PB_4);
-    rRangeA1 = new DigitalOut(PB_5);
+    rRangeA0 = new DigitalOut(PB_5);
+    rRangeA1 = new DigitalOut(PB_7);
 
     voltage_ptr = voltage;
     resistanceSerial = serial;

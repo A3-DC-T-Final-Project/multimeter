@@ -5,10 +5,6 @@
 #include "modes.hpp"
 #include "opamps_conf.hpp"
 
-extern "C" {
-#include <PB_LCD_Drivers.h>
-}
-
 void Voltage::initVoltage(Serial *serial, AnalogIn *input) {
     vRangeA0 = new DigitalOut(PE_3);
     vRangeA1 = new DigitalOut(PE_4);

@@ -6,9 +6,7 @@
 #include "resistance.hpp"
 #include "common.hpp"
 
-extern "C" {
-    #include <PB_LCD_Drivers.h>
-}
+#include <ST7066U.hpp>
 
 DigitalIn button(BUTTON1);
 
@@ -19,6 +17,10 @@ int main() {
     int mode = DC_MODE;
 
     int lastPress = 0;
+
+    // Initialise LCD
+    ST7066U st7066u(PB_0, PB_1, PB_2, PA_15, PD_0, PD_1, PD_2, PD_3, PD_4, PD_5,
+                    PD_6, PD_7, false, false);
 
     // Initialise common class (initialises analoginput)
     Common * common = new Common();
@@ -40,12 +42,9 @@ int main() {
     Resistance * resistance = new Resistance();
     resistance->initResistance(serial, voltage);
 
-    // Initialise LCD
-    PB_LCD_Init();
-
     while(true) {
         // Clear LCD
-        PB_LCD_Clear();
+        st7066u.clear();
 
         if (button == 1 && lastPress == 0) {
             modes.switchMode(&mode);
@@ -57,38 +56,38 @@ int main() {
         }
 
         // Print mode info to LCD
-        PB_LCD_GoToXY(0, 0);
+        st7066u.firstLine();
         char * message = (char *) malloc(12 * sizeof(char));
         char * measurement;
         switch (mode) {
             default:
             case DC_MODE:
                 snprintf(message, 0xC, "DC Voltage:");
-                PB_LCD_WriteString(message, 0xC);
+                st7066u.printString(message);
                 measurement = voltage->measureVoltage(DC_MODE, NULL);
-                PB_LCD_GoToXY(0, 1);
-                PB_LCD_WriteString(measurement, 0x10);
+                st7066u.secondLine();
+                st7066u.printString(measurement);
                 break;
             case AC_MODE:
                 snprintf(message, 0xC, "AC Voltage:");
-                PB_LCD_WriteString(message, 0xC);
+                st7066u.printString(message);
                 measurement = voltage->measureVoltage(AC_MODE, NULL);
-                PB_LCD_GoToXY(0, 1);
-                PB_LCD_WriteString(measurement, 0x10);
+                st7066u.secondLine();
+                st7066u.printString(measurement);
                 break;
             case I_MODE:
                 snprintf(message, 0xC, "Current:");
-                PB_LCD_WriteString(message, 0xC);
+                st7066u.printString(message);
                 measurement = current->measureCurrent();
-                PB_LCD_GoToXY(0, 1);
-                PB_LCD_WriteString(measurement, 0x10);
+                st7066u.secondLine();
+                st7066u.printString(measurement);
                 break;
             case R_MODE:
                 snprintf(message, 0xC, "Resistance:");
-                PB_LCD_WriteString(message, 0xC);
+                st7066u.printString(message);
                 measurement = resistance->measureResistance();
-                PB_LCD_GoToXY(0, 1);
-                PB_LCD_WriteString(measurement, 0x10);
+                st7066u.secondLine();
+                st7066u.printString(measurement);
                 break;
         }
         free(message);

@@ -10,7 +10,6 @@
 
 class Modes {
     private:
-        DigitalOut * modeA1;
         DigitalOut * modeA0;
     public:
         void initModes();

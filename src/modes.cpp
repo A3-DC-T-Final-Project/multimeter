@@ -1,8 +1,9 @@
 #include "modes.hpp"
 
 void Modes::initModes() {
-    modeA0 = new DigitalOut(PB_5);
-    modeA1 = new DigitalOut(PB_7);
+    modeA0 = new DigitalOut(PB_4);
+
+    modeA0->write(0);
 }
 
 void Modes::switchMode(int * mode) {
@@ -11,9 +12,6 @@ void Modes::switchMode(int * mode) {
     if ((*mode) == (R_MODE + 1)) {
         (*mode) = DC_MODE;
     }
-
-    // TODO: Hard-wire to ground
-    modeA1->write(0);
 
     switch(*mode) {
         default:
