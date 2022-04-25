@@ -42,6 +42,8 @@ int main() {
     Resistance * resistance = new Resistance();
     resistance->initResistance(serial, voltage);
 
+    uint8_t omegaAddr = st7066u.storeCustomChar(resistance->omega);
+
     while(true) {
         // Clear LCD
         st7066u.clear();
@@ -85,9 +87,15 @@ int main() {
             case R_MODE:
                 snprintf(message, 0xC, "Resistance:");
                 st7066u.printString(message);
-                measurement = resistance->measureResistance();
+                bool buttonIsPressed = false;
+                measurement = resistance->measureResistance(&buttonIsPressed);
                 st7066u.secondLine();
-                st7066u.printString(measurement);
+                if(buttonIsPressed) {
+                    st7066u.printString(measurement);
+                    st7066u.writeCustomChar(omegaAddr);
+                } else 
+                    st7066u.printString("Press button");
+                
                 break;
         }
         free(message);

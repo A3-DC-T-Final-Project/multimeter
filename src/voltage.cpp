@@ -92,9 +92,9 @@ void Voltage::measureDC(char *voltage, OpAmpsConf *opAmpsConf,
 
     if (voltageForResistance == NULL) {
         if (range == V_100M_Range)
-            snprintf(voltage, 0x11, "%.5lfmV", calculatedVoltage * 1000);
+            snprintf(voltage, 0x11, "%.3lfmV", calculatedVoltage * 1000);
         else
-            snprintf(voltage, 0x11, "%.5lfV", calculatedVoltage);
+            snprintf(voltage, 0x11, "%.3lfV", calculatedVoltage);
     } else {
         (*voltageForResistance) = calculatedVoltage;
     }
@@ -136,14 +136,18 @@ void Voltage::measureAC(char *voltage, OpAmpsConf *opAmpsConf) {
         sumOfSquares += pow(instantaneousVoltage, 2);
 
         // As per DC reading.
-        // wait_us(2);
+        wait_us(2);
     }
 
     sumOfSquares /= 1000;
 
     double result = sqrt(sumOfSquares);
+    if(result > 1.15) {
+        // Offset determined experimentally
+        result -= 0.4;
+    }
 
-    snprintf(voltage, 0x11, "%.5lf Vrms", result);
+    snprintf(voltage, 0x11, "%.3lf Vrms", result);
 }
 
 char *Voltage::measureVoltage(int mode, float *voltageForResistance) {

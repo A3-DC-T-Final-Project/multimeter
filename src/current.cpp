@@ -81,7 +81,7 @@ char * Current::measureCurrent() {
     char * current = (char *) malloc(0x10 * sizeof(char));
 
     // Multiply by 1000 to have sig fifures before floating point.
-    snprintf(current, 0x11, "%.5lfmA", calculatedCurrent * 1000);
+    snprintf(current, 0x11, "%.3lfmA", calculatedCurrent * 1000);
 
     if((calculatedTotal > rangeLowerBound && calculatedTotal < rangeUpperBound)
         && range != I_10) {

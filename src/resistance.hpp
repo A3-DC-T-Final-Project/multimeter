@@ -17,9 +17,20 @@ class Resistance {
         Serial * resistanceSerial;
         Voltage * voltage_ptr;
         void changeCurrentRange(int range);
+
     public:
         void initResistance(Serial * serial, Voltage * voltage);
-        char * measureResistance();
+        char * measureResistance(bool * buttonIsPressed);
+        uint8_t omega[8][5] = {
+            {0, 0, 0, 0, 0},
+            {0, 1, 1, 1, 0},
+            {1, 0, 0, 0, 1},
+            {1, 0, 0, 0, 1},
+            {1, 0, 0, 0, 1},
+            {0, 1, 0, 1, 0},
+            {1, 1, 0, 1, 1},
+            {0, 0, 0, 0, 0}
+        };
 };
 
 #endif /* _RESISTANCE_H_ */
