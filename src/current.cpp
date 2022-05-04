@@ -78,6 +78,13 @@ char * Current::measureCurrent() {
     float calculatedCurrent = CommonUtils::map(total, lowerBound, upperBound, lowerVoltage, upperVoltage);
     float calculatedTotal = total * vdda;
 
+    // Current has 1mV offset
+    if(range != I_25 && range != I_10) {
+        calculatedCurrent *= 1000;
+        calculatedCurrent += 1;
+        calculatedCurrent /= 1000;
+    }
+
     char * current = (char *) malloc(0x10 * sizeof(char));
 
     // Multiply by 1000 to have sig fifures before floating point.

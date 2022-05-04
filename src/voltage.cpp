@@ -91,8 +91,14 @@ void Voltage::measureDC(char *voltage, OpAmpsConf *opAmpsConf,
     float calculatedTotal = total * vdda;
 
     if (voltageForResistance == NULL) {
-        if (range == V_100M_Range)
-            snprintf(voltage, 0x11, "%.3lfmV", calculatedVoltage * 1000);
+        if (range == V_100M_Range) {
+            // 100mV range has about 3mV offset
+            calculatedVoltage *= 1000;
+            calculatedVoltage -= 3;
+            snprintf(voltage, 0x11, "%.3lfmV", calculatedVoltage);
+
+            calculatedVoltage /= 1000;
+        }
         else
             snprintf(voltage, 0x11, "%.3lfV", calculatedVoltage);
     } else {
