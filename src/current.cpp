@@ -48,7 +48,7 @@ void Current::changeCurrentRange(int range) {
     }
 }
 
-char * Current::measureCurrent() {
+char * Current::measureCurrent(bool * hasAutoRanged) {
     OpAmpsConf * opAmpsConf = new OpAmpsConf();
 
     int i;
@@ -94,9 +94,13 @@ char * Current::measureCurrent() {
         && range != I_10) {
         range -= 1;
         changeCurrentRange(range);
+
+        (*hasAutoRanged) = true;
     } else if (((calculatedTotal > expectedUpper) || (calculatedTotal < expectedLower)) && range != I_100) {
         range += 1;
         changeCurrentRange(range);
+
+        (*hasAutoRanged) = true;
     }
 
     return current;

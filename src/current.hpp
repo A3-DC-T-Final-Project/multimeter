@@ -23,7 +23,7 @@ class Current {
         void changeCurrentRange(int range);
     public:
         void initCurrent(Serial * serial, Voltage * voltage, AnalogIn * input);
-        char * measureCurrent();
+        char * measureCurrent(bool * hasAutoRanged);
 };
 
 #endif // _CURRENT_H_

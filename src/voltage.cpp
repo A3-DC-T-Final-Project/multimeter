@@ -110,11 +110,17 @@ void Voltage::measureDC(char *voltage, OpAmpsConf *opAmpsConf,
         range != V_100M_Range) {
         range -= 1;
         changeVoltageRange(range);
+
+        if(_hasAutoRanged != NULL)
+            (*_hasAutoRanged) = true;
     } else if (((calculatedTotal > expectedUpper) ||
                 (calculatedTotal < expectedLower)) &&
                range != V_10_Range) {
         range += 1;
         changeVoltageRange(range);
+
+        if(_hasAutoRanged != NULL)
+            (*_hasAutoRanged) = true;
     }
 }
 
@@ -156,7 +162,9 @@ void Voltage::measureAC(char *voltage, OpAmpsConf *opAmpsConf) {
     snprintf(voltage, 0x11, "%.3lf Vrms", result);
 }
 
-char *Voltage::measureVoltage(int mode, float *voltageForResistance) {
+char *Voltage::measureVoltage(int mode, float *voltageForResistance, bool * hasAutoRanged) {
+    _hasAutoRanged = hasAutoRanged;
+
     char *voltage = (char *)malloc(0x11 * sizeof(char));
     snprintf(voltage, 0xC, "Placeholder");
 

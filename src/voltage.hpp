@@ -22,9 +22,10 @@ class Voltage {
         void changeVoltageRange(int range);
         void measureDC(char * voltage, OpAmpsConf * opAmpsConf, float * voltageForResistance);
         void measureAC(char * voltage, OpAmpsConf * opAmpsConf);
+        bool * _hasAutoRanged;
     public:
         void initVoltage(Serial * serial, AnalogIn * input);
-        char * measureVoltage(int mode, float * voltageForResistance);
+        char * measureVoltage(int mode, float * voltageForResistance, bool * hasAutoRanged);
         float getVREF();
         float getVDDA();
 };

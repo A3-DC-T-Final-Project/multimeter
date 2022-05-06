@@ -35,9 +35,9 @@ void Resistance::changeCurrentRange(int range) {
     }
 }
 
-char * Resistance::measureResistance(bool * buttonIsPressed) {
+char * Resistance::measureResistance(bool * buttonIsPressed, bool * hasAutoRanged) {
     float voltage = 0;
-    voltage_ptr->measureVoltage(DC_MODE, &voltage);
+    voltage_ptr->measureVoltage(DC_MODE, &voltage, NULL);
 
     float calculatedResistance = 0;
 
@@ -57,9 +57,13 @@ char * Resistance::measureResistance(bool * buttonIsPressed) {
     if(voltage < 1 && range != R_1M) {
         range++;
         changeCurrentRange(range);
+
+        (*hasAutoRanged) = true;
     } else if (voltage > 9.5 && range != R_10U) {
         range--;
         changeCurrentRange(range);
+
+        (*hasAutoRanged) = true;
     }
 
     // 5% offset, probably cause of noise

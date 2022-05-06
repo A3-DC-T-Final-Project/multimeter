@@ -20,7 +20,7 @@ class Resistance {
 
     public:
         void initResistance(Serial * serial, Voltage * voltage);
-        char * measureResistance(bool * buttonIsPressed);
+        char * measureResistance(bool * buttonIsPressed, bool * hasAutoRanged);
         uint8_t omega[8][5] = {
             {0, 0, 0, 0, 0},
             {0, 1, 1, 1, 0},
